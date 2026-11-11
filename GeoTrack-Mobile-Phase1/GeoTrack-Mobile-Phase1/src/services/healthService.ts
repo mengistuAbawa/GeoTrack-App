@@ -1,0 +1,1 @@
+import api from'./api';export type HealthResponse={status:string;message?:string};export async function checkBackendHealth(){const response=await api.get<HealthResponse>('/health');return response.data;}

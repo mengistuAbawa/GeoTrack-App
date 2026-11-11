@@ -1,0 +1,1 @@
+export const colors={primary:'#173F91',accent:'#3478F6',background:'#F4F7FC',surface:'#FFFFFF',text:'#172033',muted:'#687386',border:'#E5EAF2',success:'#16845B',danger:'#C43D3D',softBlue:'#EAF1FF',softGreen:'#E8F6EF',softRed:'#FCECEC'};

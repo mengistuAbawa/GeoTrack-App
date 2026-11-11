@@ -1,0 +1,20 @@
+# Dependencies
+**/node_modules/
+
+# Local environment files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Generated build and tool output
+**/.expo/
+**/.expo-shared/
+**/dist/
+**/build/
+**/coverage/
+**/.nyc_output/
+
+# Logs and operating system files
+**/*.log
+**/.DS_Store
+**/Thumbs.db

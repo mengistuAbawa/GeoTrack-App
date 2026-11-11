@@ -1,0 +1,3 @@
+require('dotenv').config();
+const bcrypt=require('bcryptjs'); const pool=require('../src/config/db');
+(async()=>{ try { const email=process.env.ADMIN_EMAIL, password=process.env.ADMIN_PASSWORD; if(!email||!password||password.length<12) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD (minimum 12 characters) in .env'); const hash=await bcrypt.hash(password,12); await pool.query(`INSERT INTO admin_users(name,email,password_hash) VALUES($1,$2,$3) ON CONFLICT(email) DO UPDATE SET password_hash=EXCLUDED.password_hash`,['GeoTrack Administrator',email.toLowerCase(),hash]); console.log('Admin account created/updated:',email); } catch(e){ console.error(e.message); process.exitCode=1; } finally { await pool.end(); } })();

@@ -1,0 +1,3 @@
+require('dotenv').config();
+const express=require('express');const cors=require('cors');const helmet=require('helmet');const rateLimit=require('express-rate-limit');const routes=require('./routes');const errorHandler=require('./middleware/error');
+const app=express();app.use(helmet());app.use(cors({origin:(process.env.CLIENT_ORIGIN||'http://localhost:5173').split(',').map(x=>x.trim()),credentials:true}));app.use(express.json({limit:'1mb'}));app.use('/api',rateLimit({windowMs:15*60*1000,limit:300,standardHeaders:true,legacyHeaders:false}));app.use('/api',routes);app.use((req,res)=>res.status(404).json({message:'Route not found'}));app.use(errorHandler);module.exports=app;

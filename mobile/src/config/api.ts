@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
+import { DeviceEventEmitter } from 'react-native';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
 const API_TIMEOUT = parseInt(process.env.EXPO_PUBLIC_API_TIMEOUT || '30000');
@@ -35,22 +36,20 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as AxiosRequestConfig & { retry?: number };
+    const originalRequest = error.config as (AxiosRequestConfig & { retry?: number }) | undefined;
 
     if (error.response?.status === 401) {
       // Token expired or invalid
       try {
         await SecureStore.deleteItemAsync('authToken');
         await AsyncStorage.removeItem('user');
-        // Trigger logout in auth context
-        const event = new CustomEvent('logout');
-        window.dispatchEvent(event);
+        DeviceEventEmitter.emit('logout');
       } catch (e) {
         console.error('Error clearing auth:', e);
       }
     }
 
-    if (error.response?.status === 429) {
+    if (error.response?.status === 429 && originalRequest) {
       // Rate limited - implement retry with exponential backoff
       originalRequest.retry = (originalRequest.retry || 0) + 1;
       if (originalRequest.retry <= 3) {

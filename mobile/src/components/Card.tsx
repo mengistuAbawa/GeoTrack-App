@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, StyleProp, ViewStyle } from 'react-native';
 import { useTheme } from '@/context/ThemeContext';
 import { spacing, borderRadius } from '@/theme/typography';
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   padding?: number;
 }
 

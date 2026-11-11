@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
+  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/context/ThemeContext';
@@ -16,6 +17,7 @@ import { SharingContact, SharingRequest } from '@/types';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Loading } from '@/components/Loading';
+import { TextInput } from '@/components/TextInput';
 import { typography, spacing, borderRadius } from '@/theme/typography';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -26,6 +28,9 @@ const ContactsScreen: React.FC = () => {
   const [incomingRequests, setIncomingRequests] = useState<SharingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'contacts' | 'requests'>('contacts');
+  const [addContactVisible, setAddContactVisible] = useState(false);
+  const [phone, setPhone] = useState('');
+  const [sendingRequest, setSendingRequest] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -77,6 +82,22 @@ const ContactsScreen: React.FC = () => {
       showToast('Access revoked', ToastType.SUCCESS);
     } catch (error) {
       showToast('Failed to revoke access', ToastType.ERROR);
+    }
+  };
+
+  const handleRequestSharing = async () => {
+    try {
+      setSendingRequest(true);
+      await sharingService.requestSharing(phone);
+      setPhone('');
+      setAddContactVisible(false);
+      showToast('Sharing request sent. The person must approve it.', ToastType.SUCCESS);
+    } catch (error) {
+      const message = (error as { response?: { data?: { message?: string } } })
+        .response?.data?.message || 'Failed to send sharing request';
+      showToast(message, ToastType.ERROR);
+    } finally {
+      setSendingRequest(false);
     }
   };
 
@@ -303,10 +324,54 @@ const ContactsScreen: React.FC = () => {
               backgroundColor: colors.primary,
             },
           ]}
+          onPress={() => setAddContactVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Request location sharing by phone number"
         >
           <MaterialIcons name="add" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={addContactVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAddContactVisible(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <Card style={styles.modalCard}>
+            <Text style={[typography.h4, { color: colors.text }]}>
+              Request location sharing
+            </Text>
+            <Text style={[typography.body2, { color: colors.gray[600], marginTop: spacing[8] }]}>
+              Enter their GeoTrack phone number. They must approve before you can view their location.
+            </Text>
+            <TextInput
+              label="Phone number"
+              placeholder="+2519XXXXXXXX"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+              style={{ marginTop: spacing[16] }}
+            />
+            <View style={[styles.buttonRow, { marginTop: spacing[16] }]}>
+              <Button
+                title="Cancel"
+                onPress={() => setAddContactVisible(false)}
+                variant="secondary"
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Send request"
+                onPress={handleRequestSharing}
+                loading={sendingRequest}
+                disabled={!phone.trim()}
+                style={{ flex: 1 }}
+              />
+            </View>
+          </Card>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -368,6 +433,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 3,
     elevation: 5,
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing[24],
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+  },
+  modalCard: {
+    padding: spacing[20],
   },
 });
 

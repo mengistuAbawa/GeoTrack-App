@@ -183,7 +183,7 @@ const HomeScreen: React.FC = () => {
               },
             ]}
           >
-            <MaterialIcons name="add-person" size={20} color={colors.primary} />
+            <MaterialIcons name="person-add" size={20} color={colors.primary} />
             <Text style={[typography.body2, { color: colors.text, marginLeft: spacing[12] }]}>
               Add Contact
             </Text>

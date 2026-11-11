@@ -1,6 +1,6 @@
 # GeoTrack Admin Dashboard
 
-A responsive React + Vite + Tailwind CSS admin UI starter for GeoTrack.
+The GeoTrack admin dashboard uses the shared Express API for authentication, user management, and consent-authorized location data.
 
 ## Requirements
 - Node.js 20+
@@ -8,11 +8,12 @@ A responsive React + Vite + Tailwind CSS admin UI starter for GeoTrack.
 
 ## Run locally (Windows CMD)
 ```bat
-cd path\to\GeoTrack-Admin-Dashboard
+cd /d D:\GeoTrack\admin
 npm install
+copy .env.example .env
 npm run dev
 ```
-Open the local URL printed by Vite (normally http://localhost:5173).
+Set `VITE_BACKEND_ORIGIN` in `.env` to the backend host if it is not `http://localhost:5000`. The `/api` requests are proxied by Vite. Open the local URL printed by Vite (normally http://localhost:5173).
 
 ## Build
 ```bat
@@ -28,8 +29,4 @@ npm run preview
 - Recent activity and synchronization status
 - Responsive navigation for smaller screens
 
-## Important
-This is a frontend UI prototype with sample data. It does not yet authenticate admins,
-query phone numbers, access GPS, display real locations, or connect to a backend.
-Connect it to the GeoTrack API only after backend authentication, role permissions,
-and user-consented location-sharing endpoints are implemented.
+The backend and mobile app must point at the same PostgreSQL database. The live-location page shows GPS updates only while the signed-in user has explicitly enabled sharing in the mobile app; a phone number alone cannot provide location.

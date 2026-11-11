@@ -16,8 +16,9 @@ import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { typography, spacing, borderRadius } from '@/theme/typography';
+import { RootStackParamList } from '@/navigation/types';
 
-type Props = NativeStackScreenProps<any, 'PhoneNumber'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'PhoneNumber'>;
 
 const PhoneNumberScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
@@ -50,7 +51,10 @@ const PhoneNumberScreen: React.FC<Props> = ({ navigation }) => {
         return;
       }
 
-      await requestOtp(e164);
+      const response = await requestOtp(e164);
+      if (response.developmentCode) {
+        showToast(`Development verification code: ${response.developmentCode}`, ToastType.INFO, 10000);
+      }
       navigation.navigate('OtpVerification', { phone: e164 });
     } catch (err) {
       showToast('Failed to request OTP. Please try again.', ToastType.ERROR);

@@ -2,7 +2,7 @@
  * Formatting utilities for display
  */
 
-import { formatDistance, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
 export const formatPhoneNumber = (phone: string): string => {
   // Format phone to readable format

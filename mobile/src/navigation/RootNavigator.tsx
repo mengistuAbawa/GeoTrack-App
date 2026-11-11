@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth, AuthState } from '@/context/AuthContext';
 import { Loading } from '@/components/Loading';
+import { RootStackParamList } from './types';
 
 // Auth screens
 import WelcomeScreen from '@/screens/auth/WelcomeScreen';
@@ -13,7 +14,7 @@ import ProfileSetupScreen from '@/screens/auth/ProfileSetupScreen';
 // Main app screens
 import AppNavigator from './AppNavigator';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootNavigator = () => {
   const { state: authState } = useAuth();
@@ -35,7 +36,6 @@ const RootNavigator = () => {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-          animationEnabled: true,
         }}
       >
         {authState === AuthState.AUTHENTICATED ? (
@@ -45,9 +45,6 @@ const RootNavigator = () => {
         ) : (
           <Stack.Group
             key="unauthenticated"
-            screenOptions={{
-              animationEnabled: true,
-            }}
           >
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
             <Stack.Screen name="PhoneNumber" component={PhoneNumberScreen} />

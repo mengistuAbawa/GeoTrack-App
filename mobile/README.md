@@ -17,7 +17,7 @@ A privacy-first location tracking, journey history, and private messaging mobile
 ## Prerequisites
 
 - Node.js 16+ and npm/yarn
-- Expo CLI (`npm install -g expo-cli`)
+- Node.js 20+ and npm (Expo CLI is included with the project)
 - iOS: Xcode 14+ (for iOS development)
 - Android: Android Studio with SDK 33+ (for Android development)
 
@@ -59,13 +59,19 @@ npm install
 cp .env.example .env
 ```
 
-Update `.env` with your backend API URL:
+Set `.env` to the same backend used by the admin dashboard. Choose a URL that is reachable from the device:
 
 ```
-EXPO_PUBLIC_API_BASE_URL=http://your-backend-url/api
+EXPO_PUBLIC_API_BASE_URL=http://localhost:5000/api
 EXPO_PUBLIC_API_TIMEOUT=30000
 EXPO_PUBLIC_ENABLE_DEV_LOGGING=true
 ```
+
+- Android emulator: `http://10.0.2.2:5000/api`
+- Physical phone: `http://<your-computer-LAN-IP>:5000/api`
+- iOS simulator or local web: `http://localhost:5000/api`
+
+In the backend `.env`, add the web origins you use to `CLIENT_ORIGIN` (for example `http://localhost:5173,http://localhost:8081`). Native iOS and Android API requests do not use browser CORS.
 
 3. **Configure native permissions** (already configured in `app.json`):
 
@@ -77,10 +83,10 @@ The app requests:
 
 ### Development
 
-Start the Expo development server:
+Start the local Expo CLI:
 
 ```bash
-npm start
+npx expo start
 ```
 
 Then choose:

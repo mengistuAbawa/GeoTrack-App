@@ -6,6 +6,28 @@ import { logger } from '@/config/logger';
 
 const TAG = 'AuthService';
 
+interface ApiUser {
+  id: string;
+  phone: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  status: User['status'];
+  created_at: string;
+  location_sharing_enabled?: boolean;
+}
+
+const mapUser = (user: ApiUser): User => ({
+  id: user.id,
+  phone: user.phone,
+  fullName: user.full_name ?? undefined,
+  email: user.email ?? undefined,
+  avatarUrl: user.avatar_url ?? undefined,
+  status: user.status,
+  createdAt: user.created_at,
+  locationSharingEnabled: user.location_sharing_enabled ?? false,
+});
+
 export const authService = {
   requestOtp: async (phone: string): Promise<{ message: string; developmentCode?: string }> => {
     try {
@@ -22,8 +44,9 @@ export const authService = {
   verifyOtp: async (phone: string, code: string): Promise<AuthResponse> => {
     try {
       const payload: OtpVerifyPayload = { phone, code };
-      const response = await api.post<AuthResponse>('/auth/verify-otp', payload);
-      const { token, user } = response.data;
+      const response = await api.post<{ token: string; user: ApiUser }>('/auth/verify-otp', payload);
+      const { token } = response.data;
+      const user = mapUser(response.data.user);
 
       // Store token securely
       await SecureStore.setItemAsync('authToken', token);
@@ -33,7 +56,7 @@ export const authService = {
       await AsyncStorage.setItem('lastLoginPhone', phone);
 
       logger.info(TAG, 'OTP verified successfully');
-      return response.data;
+      return { token, user };
     } catch (error) {
       logger.error(TAG, 'Failed to verify OTP', error);
       throw error;
@@ -42,8 +65,8 @@ export const authService = {
 
   getCurrentUser: async (): Promise<User> => {
     try {
-      const response = await api.get<{ user: User }>('/users/me');
-      return response.data.user;
+      const response = await api.get<{ user: ApiUser }>('/users/me');
+      return mapUser(response.data.user);
     } catch (error) {
       logger.error(TAG, 'Failed to fetch current user', error);
       throw error;
@@ -62,8 +85,8 @@ export const authService = {
         avatarUrl,
       };
 
-      const response = await api.patch<{ user: User }>('/users/me', payload);
-      const user = response.data.user;
+      const response = await api.patch<{ user: ApiUser }>('/users/me', payload);
+      const user = mapUser(response.data.user);
 
       // Update cached user
       await AsyncStorage.setItem('user', JSON.stringify(user));

@@ -11,8 +11,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '@/context/ThemeContext';
 import { Button } from '@/components/Button';
 import { typography, spacing, borderRadius } from '@/theme/typography';
+import { RootStackParamList } from '@/navigation/types';
 
-type Props = NativeStackScreenProps<any, 'Welcome'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
 
 const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
   const { colors, theme } = useTheme();

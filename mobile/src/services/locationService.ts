@@ -4,6 +4,30 @@ import { logger } from '@/config/logger';
 
 const TAG = 'LocationService';
 
+interface ApiLocationRecord {
+  id: string;
+  user_id?: string;
+  client_record_id?: string;
+  latitude: number;
+  longitude: number;
+  accuracy?: number | null;
+  altitude?: number | null;
+  recorded_at: string;
+  received_at?: string;
+}
+
+const mapLocation = (record: ApiLocationRecord): LocationRecord => ({
+  id: record.id,
+  userId: record.user_id,
+  clientRecordId: record.client_record_id,
+  latitude: Number(record.latitude),
+  longitude: Number(record.longitude),
+  accuracy: record.accuracy ?? undefined,
+  altitude: record.altitude ?? undefined,
+  recordedAt: record.recorded_at,
+  receivedAt: record.received_at,
+});
+
 export const locationService = {
   setLocationSharing: async (enabled: boolean): Promise<void> => {
     try {
@@ -30,8 +54,8 @@ export const locationService = {
   getHistory: async (limit: number = 100, before?: string): Promise<LocationRecord[]> => {
     try {
       const params = { limit, before };
-      const response = await api.get<{ locations: LocationRecord[] }>('/locations/history', { params });
-      return response.data.locations;
+      const response = await api.get<{ locations: ApiLocationRecord[] }>('/locations/history', { params });
+      return response.data.locations.map(mapLocation);
     } catch (error) {
       logger.error(TAG, 'Failed to fetch location history', error);
       throw error;
@@ -50,11 +74,11 @@ export const locationService = {
 
   getSharedHistory: async (userId: string, limit: number = 500): Promise<LocationRecord[]> => {
     try {
-      const response = await api.get<{ locations: LocationRecord[] }>(
+      const response = await api.get<{ locations: ApiLocationRecord[] }>(
         `/locations/shared/${userId}/history`,
         { params: { limit } }
       );
-      return response.data.locations;
+      return response.data.locations.map(mapLocation);
     } catch (error) {
       logger.error(TAG, 'Failed to fetch shared history', error);
       throw error;

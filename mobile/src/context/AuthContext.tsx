@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { authService } from '@/services/authService';
 import { User } from '@/types';
 import { logger } from '@/config/logger';
@@ -17,7 +18,7 @@ interface AuthContextType {
   state: AuthState;
   user: User | null;
   error: string | null;
-  requestOtp: (phone: string) => Promise<void>;
+  requestOtp: (phone: string) => Promise<{ developmentCode?: string }>;
   verifyOtp: (phone: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -56,17 +57,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initializeAuth();
   }, []);
 
-  const requestOtp = useCallback(async (phone: string) => {
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+      setError(null);
+      setState(AuthState.UNAUTHENTICATED);
+    };
+
+    const subscription = DeviceEventEmitter.addListener('logout', handleUnauthorized);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const requestOtp = useCallback(async (phone: string): Promise<{ developmentCode?: string }> => {
     try {
       setError(null);
       setState(AuthState.LOADING);
-      await authService.requestOtp(phone);
+      const response = await authService.requestOtp(phone);
+      setState(AuthState.UNAUTHENTICATED);
       logger.info(TAG, 'OTP requested');
+      return response;
     } catch (err: any) {
       const message = err?.response?.data?.message || 'Failed to request OTP';
       setError(message);
       setState(AuthState.ERROR);
       logger.error(TAG, 'OTP request failed', err);
+      throw err;
     }
   }, []);
 
@@ -83,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(message);
       setState(AuthState.ERROR);
       logger.error(TAG, 'OTP verification failed', err);
+      throw err;
     }
   }, []);
 

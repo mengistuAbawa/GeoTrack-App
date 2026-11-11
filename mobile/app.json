@@ -61,7 +61,9 @@
         }
       ],
       "expo-secure-store",
-      "expo-asset"
+      "expo-asset",
+      "expo-sqlite",
+      "expo-font"
     ],
     "extra": {
       "eas": {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useTheme } from '@/context/ThemeContext';
@@ -117,9 +117,9 @@ const AppNavigator = () => {
           let iconName: keyof typeof MaterialIcons.glyphMap = 'home';
 
           if (route.name === 'Home') {
-            iconName = focused ? 'dashboard' : 'dashboard-outline';
+            iconName = 'dashboard';
           } else if (route.name === 'Map') {
-            iconName = focused ? 'location-on' : 'location-on-outline';
+            iconName = 'location-on';
           } else if (route.name === 'Contacts') {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'History') {

@@ -33,6 +33,7 @@ When `OTP_DEV_MODE=true`, the API returns `developmentCode` in the request respo
 | POST | `/api/auth/verify-otp` | Public |
 | POST | `/api/admin/auth/login` | Public |
 | GET/PATCH | `/api/users/me` | User |
+| PATCH | `/api/users/me/location-sharing` | User, explicit opt-in |
 | POST | `/api/locations/sync` | User |
 | GET | `/api/locations/history` | User |
 | GET | `/api/locations/shared-with-me` | User |
@@ -46,6 +47,8 @@ When `OTP_DEV_MODE=true`, the API returns `developmentCode` in the request respo
 | GET/POST | `/api/messages/conversations/:id` | Conversation participant |
 | GET | `/api/admin/dashboard/stats` | Admin |
 | GET | `/api/admin/users` | Admin |
+| GET | `/api/admin/locations` | Admin, consent-authorized records only |
+| GET | `/api/admin/live-locations` | Admin, recent active shares only |
 | PATCH | `/api/admin/users/:id/status` | Admin |
 | GET | `/api/admin/audit-logs` | Admin |
 
@@ -73,6 +76,7 @@ The owner approves or rejects it using `PATCH /api/sharing/requests/:id/respond`
 - A phone number is an account identifier; it does not provide GPS coordinates.
 - The mobile app must collect the signed-in user's own location only after clear permission and user consent. Store offline records locally and sync them using `/api/locations/sync` when connectivity returns.
 - Never allow a caller to submit a different user's location. The sync endpoint always assigns records to the authenticated user.
-- Live sharing must be built on top of an accepted share and an explicit visible tracking control. This starter implements history sharing and consent records; it does not implement realtime socket streaming.
-- Admin endpoints expose account administration and aggregate metrics, not private location histories or message contents.
+- Location uploads require the user's explicit opt-in. The mobile app visibly sends GPS updates while sharing is on, and turning sharing off stops future uploads.
+- The admin dashboard and mobile app must use the same backend/database. Configure the admin's `VITE_BACKEND_ORIGIN` and mobile's `EXPO_PUBLIC_API_BASE_URL` for the reachable backend address. Add browser origins to the comma-separated `CLIENT_ORIGIN`; native app requests are not subject to browser CORS.
+- Admin live locations are limited to recent GPS updates received during the user's current sharing session. Location history is visible only while the user has sharing enabled.
 - Configure SMS delivery, HTTPS, production CORS origins, database backups, monitoring, and stronger per-route rate limits before production. Set `OTP_DEV_MODE=false` and remove the development OTP response path before deployment.

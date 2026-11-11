@@ -10,6 +10,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/context/ThemeContext';
@@ -18,6 +19,8 @@ import { messageService } from '@/services/messageService';
 import { Conversation, Message } from '@/types';
 import { Card } from '@/components/Card';
 import { Loading } from '@/components/Loading';
+import { Button } from '@/components/Button';
+import { TextInput as GeoTrackTextInput } from '@/components/TextInput';
 import { typography, spacing, borderRadius } from '@/theme/typography';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
@@ -30,6 +33,9 @@ const MessagesScreen: React.FC = () => {
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [newConversationVisible, setNewConversationVisible] = useState(false);
+  const [participantPhone, setParticipantPhone] = useState('');
+  const [creatingConversation, setCreatingConversation] = useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -75,6 +81,32 @@ const MessagesScreen: React.FC = () => {
     }
   };
 
+  const handleCreateConversation = async () => {
+    try {
+      setCreatingConversation(true);
+      const conversationId = await messageService.createConversation(participantPhone);
+      setParticipantPhone('');
+      setNewConversationVisible(false);
+      const conversation: Conversation = {
+        id: conversationId,
+        participants: [],
+        createdAt: new Date().toISOString(),
+      };
+      setConversations((current) => [
+        conversation,
+        ...current.filter((item) => item.id !== conversationId),
+      ]);
+      setSelectedConversation(conversation);
+      setMessages([]);
+    } catch (error) {
+      const message = (error as { response?: { data?: { message?: string } } })
+        .response?.data?.message || 'Failed to start conversation';
+      showToast(message, ToastType.ERROR);
+    } finally {
+      setCreatingConversation(false);
+    }
+  };
+
   if (loading) {
     return <Loading fullScreen message="Loading messages..." />;
   }
@@ -82,6 +114,16 @@ const MessagesScreen: React.FC = () => {
   if (!selectedConversation) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.listHeader}>
+          <Text style={[typography.h4, { color: colors.text }]}>Conversations</Text>
+          <TouchableOpacity
+            onPress={() => setNewConversationVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Start a conversation by phone number"
+          >
+            <MaterialIcons name="add-circle" size={28} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
         <ScrollView style={styles.content}>
           {conversations.length === 0 ? (
             <View style={styles.emptyState}>
@@ -151,6 +193,41 @@ const MessagesScreen: React.FC = () => {
             />
           )}
         </ScrollView>
+        <Modal
+          visible={newConversationVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setNewConversationVisible(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <Card style={styles.modalCard}>
+              <Text style={[typography.h4, { color: colors.text }]}>New conversation</Text>
+              <GeoTrackTextInput
+                label="GeoTrack phone number"
+                placeholder="+2519XXXXXXXX"
+                keyboardType="phone-pad"
+                value={participantPhone}
+                onChangeText={setParticipantPhone}
+                style={{ marginTop: spacing[16] }}
+              />
+              <View style={styles.newConversationActions}>
+                <Button
+                  title="Cancel"
+                  onPress={() => setNewConversationVisible(false)}
+                  variant="secondary"
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  title="Start"
+                  onPress={handleCreateConversation}
+                  loading={creatingConversation}
+                  disabled={!participantPhone.trim()}
+                  style={{ flex: 1 }}
+                />
+              </View>
+            </Card>
+          </View>
+        </Modal>
       </SafeAreaView>
     );
   }
@@ -274,6 +351,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[16],
     paddingVertical: spacing[12],
     borderBottomWidth: 1,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[16],
+    paddingVertical: spacing[12],
+  },
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing[24],
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+  },
+  modalCard: {
+    padding: spacing[20],
+  },
+  newConversationActions: {
+    flexDirection: 'row',
+    gap: spacing[8],
+    marginTop: spacing[16],
   },
   content: {
     flex: 1,

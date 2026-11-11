@@ -17,8 +17,9 @@ import { Button } from '@/components/Button';
 import { TextInput } from '@/components/TextInput';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { typography, spacing } from '@/theme/typography';
+import { RootStackParamList } from '@/navigation/types';
 
-type Props = NativeStackScreenProps<any, 'OtpVerification'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'OtpVerification'>;
 
 const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) => {
   const { colors } = useTheme();
@@ -51,7 +52,6 @@ const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) => {
       setLoading(true);
       clearError();
       await verifyOtp(phone, code);
-      navigation.navigate('ProfileSetup');
     } catch (err) {
       showToast('Invalid or expired code. Please try again.', ToastType.ERROR);
     } finally {
@@ -62,8 +62,14 @@ const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleResend = async () => {
     try {
       setResendTimer(60);
-      await requestOtp(phone);
-      showToast('Verification code sent', ToastType.SUCCESS);
+      const response = await requestOtp(phone);
+      showToast(
+        response.developmentCode
+          ? `Development verification code: ${response.developmentCode}`
+          : 'Verification code sent',
+        response.developmentCode ? ToastType.INFO : ToastType.SUCCESS,
+        10000
+      );
     } catch (err) {
       showToast('Failed to resend code', ToastType.ERROR);
     }
@@ -109,7 +115,7 @@ const OtpVerificationScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* Resend */}
           <View style={styles.resendContainer}>
             <Text style={[typography.body2, { color: colors.gray[600] }]}>
-              Didn't receive the code?
+              Didn&apos;t receive the code?
             </Text>
             <TouchableOpacity
               onPress={handleResend}

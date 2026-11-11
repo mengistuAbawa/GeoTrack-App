@@ -7,6 +7,7 @@ export interface User {
   avatarUrl?: string;
   status: 'active' | 'suspended' | 'deleted';
   createdAt: string;
+  locationSharingEnabled?: boolean;
 }
 
 export interface AuthResponse {
@@ -36,14 +37,14 @@ export interface Device {
 // Location types
 export interface LocationRecord {
   id: string;
-  userId: string;
-  clientRecordId: string;
+  userId?: string;
+  clientRecordId?: string;
   latitude: number;
   longitude: number;
   accuracy?: number;
   altitude?: number;
   recordedAt: string;
-  receivedAt: string;
+  receivedAt?: string;
 }
 
 export interface LocationSyncPayload {
@@ -93,10 +94,10 @@ export interface SharingRequest {
 // Message types
 export interface Conversation {
   id: string;
-  participants: User[];
-  lastMessage?: Message;
+  participants?: User[];
+  lastMessage?: Pick<Message, 'body' | 'createdAt'> & Partial<Message>;
   lastMessageAt?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface Message {

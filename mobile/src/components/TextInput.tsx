@@ -22,6 +22,7 @@ interface TextInputProps {
   helperText?: string;
   multiline?: boolean;
   numberOfLines?: number;
+  maxLength?: number;
   style?: ViewStyle;
   testID?: string;
 }
@@ -38,10 +39,11 @@ export const TextInput: React.FC<TextInputProps> = ({
   helperText,
   multiline = false,
   numberOfLines = 1,
+  maxLength,
   style,
   testID,
 }) => {
-  const { colors, theme } = useTheme();
+  const { colors } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(!secureTextEntry);
 
@@ -87,6 +89,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           onBlur={() => setIsFocused(false)}
           multiline={multiline}
           numberOfLines={numberOfLines}
+          maxLength={maxLength}
           testID={testID}
         />
 

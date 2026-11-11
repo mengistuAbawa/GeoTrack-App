@@ -11,6 +11,7 @@ import {
   Image,
 } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
+import { useLocation } from '@/context/LocationContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useNotification, ToastType } from '@/context/NotificationContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,11 +24,11 @@ type Props = NativeStackScreenProps<any, 'ProfileScreen'>;
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { user, logout } = useAuth();
+  const { isRecording, startRecording, stopRecording } = useLocation();
   const { colors } = useTheme();
   const { mode, setMode, isDark } = useTheme();
   const { showToast } = useNotification();
   const [notifications, setNotifications] = useState(true);
-  const [backgroundLocation, setBackgroundLocation] = useState(false);
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -49,6 +50,21 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         style: 'destructive',
       },
     ]);
+  };
+
+  const handleLocationSharingChange = async (enabled: boolean) => {
+    try {
+      if (enabled) {
+        await startRecording();
+      } else {
+        await stopRecording();
+      }
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : 'Failed to update location sharing',
+        ToastType.ERROR
+      );
+    }
   };
 
   return (
@@ -112,16 +128,16 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               <MaterialIcons name="location-on" size={20} color={colors.primary} />
               <View style={{ marginLeft: spacing[12], flex: 1 }}>
                 <Text style={[typography.subtitle2, { color: colors.text }]}>
-                  Background Location
+                  Live Location Sharing
                 </Text>
                 <Text style={[typography.caption, { color: colors.gray[500] }]}>
-                  Allow background location tracking
+                  Share GPS with authorized admins only while sharing is on. Runs while the app is open.
                 </Text>
               </View>
             </View>
             <Switch
-              value={backgroundLocation}
-              onValueChange={setBackgroundLocation}
+              value={isRecording}
+              onValueChange={handleLocationSharingChange}
               trackColor={{ false: colors.gray[300], true: colors.primary }}
               thumbColor={colors.white}
             />

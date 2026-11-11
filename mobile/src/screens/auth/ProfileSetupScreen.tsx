@@ -21,8 +21,9 @@ import { typography, spacing, borderRadius } from '@/theme/typography';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { authService } from '@/services/authService';
+import { RootStackParamList } from '@/navigation/types';
 
-type Props = NativeStackScreenProps<any, 'ProfileSetup'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'ProfileSetup'>;
 
 const ProfileSetupScreen: React.FC<Props> = ({ navigation }) => {
   const { colors } = useTheme();
